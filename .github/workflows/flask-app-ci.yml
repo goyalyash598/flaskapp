@@ -1,0 +1,49 @@
+name: Flask App CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flask flask-cors werkzeug pymongo google-generativeai anthropic openai pytesseract pdfplumber PyPDF2 pypandoc fitz Pillow
+    
+    - name: Run tests
+      run: |
+        python -m unittest discover tests
+    
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 .
+    
+    - name: Check main app file (flaskapp.py)
+      run: |
+        if [ ! -f flaskapp.py ]; then
+          echo "Error: flaskapp.py not found. This should be the main app file."
+          exit 1
+        fi
+        echo "flaskapp.py found. This is the main app file."
+    
+    - name: Test Flask app startup
+      run: |
+        python -c "import flaskapp; print('Flask app imported successfully')"
+
+    # Placeholder for future deployment steps
+    - name: Placeholder for deployment
+      run: |
+        echo "Add deployment steps here when ready to deploy"
