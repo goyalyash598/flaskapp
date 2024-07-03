@@ -3,9 +3,8 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 from process import process_request
-from database import store_in_api,clear_data
+from database import store_in_api, clear_data
 from io import BytesIO
-
 
 app = Flask(__name__)
 CORS(app)
@@ -21,6 +20,10 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route('/')
+def home():
+    return "Welcome to the Question Generation API"
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     file = request.files.get('file')
@@ -29,7 +32,6 @@ def upload_file():
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         return jsonify({'message': 'File uploaded successfully', 'filename': filename}), 200
     return jsonify({'error': 'No file provided'}), 400
-
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -62,21 +64,16 @@ def generate():
             filename = secure_filename(file.filename)
             if filename == last_uploaded_filename:
                 same_file = True
-
             else:
                 same_file = False
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
                 file.save(filepath)
 
-  
     questions_and_answers = process_request(filepath, pdfLang, model, questionType, inputType, bloomType, numberQuestions, prompt, questionLevel, textInput, same_file)
     
-    if("textInput" == inputType):
+    if "textInput" == inputType:
         last_uploaded_filename = filename
     return jsonify(questions_and_answers), 200
-
-
-
 
 @app.route("/store_api", methods=['POST'])
 def handleKeys():
@@ -84,14 +81,14 @@ def handleKeys():
     if keys:
         response = store_in_api(keys)
         print(response)
-        if response==[]:
+        if response == []:
             return "DNS error"
         for i in response:
-            if(i!=200):
+            if i != 200:
                 return str(i)
         return "200"
     else:
-        return  "Select some Questions"
-        
+        return "Select some Questions"
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
