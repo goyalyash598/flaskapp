@@ -11,3 +11,4 @@ pypandoc==1.13
 pytesseract==0.3.10
 pdfplumber==0.11.0
 Werkzeug==3.0.3
+gunicorn
